@@ -1,0 +1,68 @@
+unsigned long timer = 0;
+long loopTime = 5000;   // microseconds
+
+void setup() {
+  Serial.begin(38400);
+  timer = micros();
+}
+
+void loop() {
+  timeSync(loopTime);
+ 
+  double val1 = (analogRead(0) / 1023.0)*5;
+  double val2 = (analogRead(1) / 1023.0)*5;
+   double val3 = (analogRead(2) / 1023.0)*5;
+   double val4 = (analogRead(4) / 1023.0)*5;
+   double val5 = (analogRead(5) / 1023.0)*5;
+ 
+   //val3=(val2+val1)/2;
+   double val6=(val1/16);
+   double val7=(val2/16);
+   if(val4==0 && val5==0){
+   analogWrite(5,analogRead(1)/16);
+  analogWrite(6,analogRead(0)/16);
+   }
+   else{
+    analogWrite(5,0);
+  analogWrite(6,0);
+   }
+  sendToPC(&val1);
+  sendToPC(&val2);
+  sendToPC(&val7);
+  sendToPC(&val6);
+  sendToPC(&val4);
+  sendToPC(&val5);
+  
+}
+
+void timeSync(unsigned long deltaT)
+{
+  unsigned long currTime = micros();
+  long timeToDelay = deltaT - (currTime - timer);
+  if (timeToDelay > 5000)
+  {
+    delay(timeToDelay / 1000);
+    delayMicroseconds(timeToDelay % 1000);
+  }
+  else if (timeToDelay > 0)
+  {
+    delayMicroseconds(timeToDelay);
+  }
+  else
+  {
+      // timeToDelay is negative so we start immediately
+  }
+  timer = currTime + timeToDelay;
+}
+
+void sendToPC(int* data)
+{
+  byte* byteData = (byte*)(data);
+  Serial.write(byteData, 2);
+}
+
+void sendToPC(double* data)
+{
+  byte* byteData = (byte*)(data);
+  Serial.write(byteData, 4);
+}
